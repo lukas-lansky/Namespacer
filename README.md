@@ -1,0 +1,2 @@
+# Namespacer
+Architectural concerns enforcer
