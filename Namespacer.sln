@@ -3,11 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Namespacer", "Namespacer\Namespacer\Namespacer.csproj", "{55087670-C56A-48DA-A20B-84B0CCF9B22C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Namespacer", "Namespacer\Namespacer\Namespacer.csproj", "{55087670-C56A-48DA-A20B-84B0CCF9B22C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Namespacer.Test", "Namespacer\Namespacer.Test\Namespacer.Test.csproj", "{6B869BA2-5BCE-421F-9970-132B62267CFA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Namespacer.Vsix", "Namespacer\Namespacer.Vsix\Namespacer.Vsix.csproj", "{15757D52-C181-49EE-9B3F-868AAA3845AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Namespacer.Test", "Namespacer\Namespacer.Test\Namespacer.Test.csproj", "{6B869BA2-5BCE-421F-9970-132B62267CFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +21,6 @@ Global
 		{6B869BA2-5BCE-421F-9970-132B62267CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B869BA2-5BCE-421F-9970-132B62267CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B869BA2-5BCE-421F-9970-132B62267CFA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{15757D52-C181-49EE-9B3F-868AAA3845AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15757D52-C181-49EE-9B3F-868AAA3845AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15757D52-C181-49EE-9B3F-868AAA3845AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15757D52-C181-49EE-9B3F-868AAA3845AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

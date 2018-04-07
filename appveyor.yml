@@ -1,7 +1,7 @@
 version: 0.9.{build}
 
 before_build:
-  - ps: dotnet restore Namespacer/Namespacer.Test/Namespacer.Test.csproj
+  - ps: dotnet restore
 
 image:
   - Visual Studio 2017
