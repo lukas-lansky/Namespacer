@@ -8,16 +8,14 @@
   
   <PropertyGroup>
     <PackageId>Namespacer</PackageId>
-    <PackageVersion>1.0.0.0</PackageVersion>
-    <Authors>ll185115</Authors>
-    <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
-    <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>
-    <PackageIconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</PackageIconUrl>
-    <RepositoryUrl>http://REPOSITORY_URL_HERE_OR_DELETE_THIS_LINE</RepositoryUrl>
+    <PackageVersion>0.9.0.0</PackageVersion>
+    <Authors>Lukáš Lánský</Authors>
+    <PackageLicenseUrl>https://github.com/lukas-lansky/Namespacer/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/lukas-lansky/Namespacer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lukas-lansky/Namespacer</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Namespacer</Description>
-    <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>
-    <Copyright>Copyright</Copyright>
+    <Description>Architectural concerns enforcer</Description>
+    <Copyright>Copyright © Lukáš Lánský 2018</Copyright>
     <PackageTags>Namespacer, analyzers</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>

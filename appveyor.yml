@@ -1,0 +1,32 @@
+version: 0.9.{build}
+
+before_build:
+  - ps: dotnet restore Namespacer/Namespacer.Test/Namespacer.Test.csproj
+
+image:
+  - Visual Studio 2017
+  - Ubuntu
+
+configuration: Release
+
+build:
+  publish_nuget: false
+
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+
+deploy:
+  provider: NuGet
+  api_key:
+    secure: Vh5TREkxQDrA6ZJ6kaNOBVadzt1y8mqGT9ZnIJ6cm+FzsxEbC/s8yWLm0vaNPP4B
+  skip_symbols: false
+  artifact: /.*\.nupkg/
+  on:
+    CI_WINDOWS: true
+  
