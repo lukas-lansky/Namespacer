@@ -79,6 +79,8 @@ namespace Namespacer
                 return;
             }
 
+            var containingNamespace = context.Symbol.ContainingNamespace;
+            var mentionedNamespace = context.Symbol.Name;
         }
     }
 }
