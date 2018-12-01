@@ -1,10 +1,6 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using TestHelper;
-using Namespacer;
 using Namespacer.Configuration;
 
 namespace Namespacer.Test
@@ -62,7 +58,7 @@ SourceNamespace => TargetNamespace:
                 new DiagnosticResult {
                     Id = "NSER001",
                     Severity = DiagnosticSeverity.Warning,
-                    Message = "You should not mention symbol 'TargetNamespace.AnotherTypeName' in 'SourceNamespace' because of rule '' from the .namespacer configuration file",
+                    Message = "You should not mention symbol 'TargetNamespace.AnotherTypeName' in 'SourceNamespace'",
                     Locations = new[] { new DiagnosticResultLocation("Test0.cs", 10, 13) }
                 });
         }

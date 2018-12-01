@@ -98,7 +98,7 @@ namespace Namespacer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You should not mention symbol &apos;{0}&apos; in &apos;{1}&apos; because of rule &apos;{2}&apos; from the .namespacer configuration file.
+        ///   Looks up a localized string similar to You should not mention symbol &apos;{0}&apos; in &apos;{1}&apos;.
         /// </summary>
         internal static string TransgressionMessageFormat {
             get {

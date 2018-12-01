@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -80,45 +77,64 @@ namespace Namespacer
             }
 
             var invocationExpr = context.Node as InvocationExpressionSyntax;
-            var ns = invocationExpr.FirstAncestorOrSelf<NamespaceDeclarationSyntax>(n => n is NamespaceDeclarationSyntax);
-            var callerNs = ns.ChildNodes().First().ChildTokens().First().ValueText;
 
             if (invocationExpr == null)
             {
                 return;
             }
 
+            var callerNs = GetCallerNs(invocationExpr);
+
+            if (string.IsNullOrEmpty(callerNs))
+            {
+                return;
+            }
+
+            var returnTypeCalleeNs = GetCalleeReturnType(context, invocationExpr);
+
+            if (!EvaluationEngine.IsOk(callerNs, returnTypeCalleeNs, configFile.Value))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(TransgressionRule, invocationExpr.GetLocation(), returnTypeCalleeNs, callerNs));
+                return;
+            }
+
+            var methodTypeCalleeNs = context.SemanticModel.GetSymbolInfo(invocationExpr).Symbol?.ContainingType?.GetNs();
+
+            if (!EvaluationEngine.IsOk(callerNs, methodTypeCalleeNs, configFile.Value))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(TransgressionRule, invocationExpr.GetLocation(), methodTypeCalleeNs, callerNs));
+            }
+        }
+
+        private string GetCallerNs(InvocationExpressionSyntax invocationExpr)
+        {
+            var ns = invocationExpr.FirstAncestorOrSelf<NamespaceDeclarationSyntax>(n => n is NamespaceDeclarationSyntax);
+            return ns.ChildNodes().FirstOrDefault()?.ChildTokens().FirstOrDefault().ValueText;
+        }
+
+        private string GetCalleeReturnType(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpr)
+        {
             var returnType = context.SemanticModel.GetTypeInfo(invocationExpr).Type;
 
             if (returnType == null || returnType.Kind == SymbolKind.ErrorType)
             {
-                return;
+                return null;
             }
 
-            var returnTypeCalleeNs = returnType.ToDisplayString(new SymbolDisplayFormat(
+            return returnType.GetNs();
+        }
+    }
+
+    public static class RoslynHelpers
+    {
+        public static string GetNs(this ITypeSymbol typeSymbol)
+        {
+            return typeSymbol.ToDisplayString(new SymbolDisplayFormat(
                 SymbolDisplayGlobalNamespaceStyle.Omitted,
                 SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
                 SymbolDisplayGenericsOptions.IncludeTypeParameters,
                 miscellaneousOptions: SymbolDisplayMiscellaneousOptions.ExpandNullable
             ));
-
-            if (!EvaluationEngine.IsOk(callerNs, returnTypeCalleeNs, configFile.Value))
-            {
-                context.ReportDiagnostic(Diagnostic.Create(TransgressionRule, invocationExpr.GetLocation(), returnTypeCalleeNs, callerNs, ""));
-                return;
-            }
-
-            var methodTypeCalleeNs = context.SemanticModel.GetSymbolInfo(invocationExpr).Symbol.ContainingType.ToDisplayString(new SymbolDisplayFormat(
-                SymbolDisplayGlobalNamespaceStyle.Omitted,
-                SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-                SymbolDisplayGenericsOptions.IncludeTypeParameters,
-                miscellaneousOptions: SymbolDisplayMiscellaneousOptions.ExpandNullable
-            ));
-
-            if (!EvaluationEngine.IsOk(callerNs, methodTypeCalleeNs, configFile.Value))
-            {
-                context.ReportDiagnostic(Diagnostic.Create(TransgressionRule, invocationExpr.GetLocation(), methodTypeCalleeNs, callerNs, ""));
-            }
         }
     }
 }

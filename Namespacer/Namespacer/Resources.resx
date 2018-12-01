@@ -131,7 +131,7 @@
     <comment>An optional longer localizable description of the diagnostic.</comment>
   </data>
   <data name="TransgressionMessageFormat" xml:space="preserve">
-    <value>You should not mention symbol '{0}' in '{1}' because of rule '{2}' from the .namespacer configuration file</value>
+    <value>You should not mention symbol '{0}' in '{1}'</value>
     <comment>The format-able message the diagnostic displays.</comment>
   </data>
   <data name="TransgressionTitle" xml:space="preserve">
