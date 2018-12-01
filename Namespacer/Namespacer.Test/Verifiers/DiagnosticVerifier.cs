@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Namespacer.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,9 +40,9 @@ namespace TestHelper
         /// </summary>
         /// <param name="source">A class in the form of a string to run the analyzer on</param>
         /// <param name="expected"> DiagnosticResults that should appear after the analyzer is run on the source</param>
-        protected void VerifyCSharpDiagnostic(string source, params DiagnosticResult[] expected)
+        protected void VerifyCSharpDiagnostic(string source, DiagnosticAnalyzer analyzer, params DiagnosticResult[] expected)
         {
-            VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
+            VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, analyzer, expected);
         }
 
         /// <summary>

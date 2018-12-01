@@ -5,20 +5,47 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TestHelper;
 using Namespacer;
+using Namespacer.Configuration;
 
 namespace Namespacer.Test
 {
     [TestClass]
     public class UnitTest : CodeFixVerifier
     {
-
-        //No diagnostics expected to show up
         [TestMethod]
-        public void TestMethod1()
+        public void NoCodeNoConfigNoProblem()
         {
-            var test = @"";
+            var testCodeFile = @"";
 
-            VerifyCSharpDiagnostic(test);
+            var emptyConfigFile = ConfigFile.LoadFromString("").Value;
+
+            VerifyCSharpDiagnostic(testCodeFile, new NamespacerAnalyzer(emptyConfigFile));
+        }
+
+        [TestMethod]
+        public void WriteLineIsForbidden()
+        {
+            var testCodeFile = @"
+using System;
+
+namespace ConsoleApplication1
+{
+    class TypeName
+    {
+        public static void Main()
+        {
+            Console.WriteLine();
+        }
+    }
+}
+";
+
+            var emptyConfigFile = ConfigFile.LoadFromString(@"
+* => System.Console:
+    * -!> *
+").Value;
+
+            VerifyCSharpDiagnostic(testCodeFile, new NamespacerAnalyzer(emptyConfigFile));
         }
 
         //Diagnostic and CodeFix both triggered and checked for
@@ -49,29 +76,6 @@ namespace Namespacer.Test
                             new DiagnosticResultLocation("Test0.cs", 11, 15)
                         }
             };
-
-            VerifyCSharpDiagnostic(test, expected);
-
-            var fixtest = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
-    namespace ConsoleApplication1
-    {
-        class TYPENAME
-        {   
-        }
-    }";
-            VerifyCSharpFix(test, fixtest);
-        }
-
-        protected override CodeFixProvider GetCSharpCodeFixProvider()
-        {
-            return new NamespacerCodeFixProvider();
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
