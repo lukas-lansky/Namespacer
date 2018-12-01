@@ -8,26 +8,26 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Namespacer.Configuration;
+using Namespacer.Engine;
 
 namespace Namespacer
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class NamespacerAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "Namespacer";
-
+        public const string TransgressionDiagnosticId = "NSER001";
         private static readonly LocalizableString TransgressionTitle = new LocalizableResourceString(nameof(Resources.TransgressionTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString TransgressionMessageFormat = new LocalizableResourceString(nameof(Resources.TransgressionMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString TransgressionDescription = new LocalizableResourceString(nameof(Resources.TransgressionDescription), Resources.ResourceManager, typeof(Resources));
         private const string TransgressionCategory = "Correctness";
-        private static DiagnosticDescriptor TransgressionRule = new DiagnosticDescriptor(DiagnosticId, TransgressionTitle, TransgressionMessageFormat, TransgressionCategory, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: TransgressionDescription);
+        private static DiagnosticDescriptor TransgressionRule = new DiagnosticDescriptor(TransgressionDiagnosticId, TransgressionTitle, TransgressionMessageFormat, TransgressionCategory, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: TransgressionDescription);
 
+        public const string ConfigurationDiagnosticId = "NSER002";
         private static readonly LocalizableString ConfigurationTitle = new LocalizableResourceString(nameof(Resources.ConfigurationDescription), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString ConfigurationMessageFormat = new LocalizableResourceString(nameof(Resources.ConfigurationMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString ConfigurationDescription = new LocalizableResourceString(nameof(Resources.ConfigurationDescription), Resources.ResourceManager, typeof(Resources));
         private const string ConfigurationCategory = "Naming";
-        private static DiagnosticDescriptor ConfigurationRule = new DiagnosticDescriptor(DiagnosticId, ConfigurationTitle, ConfigurationMessageFormat, ConfigurationCategory, DiagnosticSeverity.Error, isEnabledByDefault: true, description: ConfigurationDescription);
-
+        private static DiagnosticDescriptor ConfigurationRule = new DiagnosticDescriptor(ConfigurationDiagnosticId, ConfigurationTitle, ConfigurationMessageFormat, ConfigurationCategory, DiagnosticSeverity.Error, isEnabledByDefault: true, description: ConfigurationDescription);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(TransgressionRule, ConfigurationRule); } }
 
@@ -46,7 +46,7 @@ namespace Namespacer
         public override void Initialize(AnalysisContext context)
         {
             context.RegisterCompilationAction(CompilationStart);
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            context.RegisterSyntaxNodeAction(AnalyzeMethodInvocations, SyntaxKind.InvocationExpression);
         }
 
         private void CompilationStart(CompilationAnalysisContext context)
@@ -72,15 +72,53 @@ namespace Namespacer
             }
         }
 
-        private void AnalyzeSymbol(SymbolAnalysisContext context)
+        private void AnalyzeMethodInvocations(SyntaxNodeAnalysisContext context)
         {
             if (configFile == null)
             {
                 return;
             }
 
-            var containingNamespace = context.Symbol.ContainingNamespace;
-            var mentionedNamespace = context.Symbol.Name;
+            var invocationExpr = context.Node as InvocationExpressionSyntax;
+            var ns = invocationExpr.FirstAncestorOrSelf<NamespaceDeclarationSyntax>(n => n is NamespaceDeclarationSyntax);
+            var callerNs = ns.ChildNodes().First().ChildTokens().First().ValueText;
+
+            if (invocationExpr == null)
+            {
+                return;
+            }
+
+            var returnType = context.SemanticModel.GetTypeInfo(invocationExpr).Type;
+
+            if (returnType == null || returnType.Kind == SymbolKind.ErrorType)
+            {
+                return;
+            }
+
+            var returnTypeCalleeNs = returnType.ToDisplayString(new SymbolDisplayFormat(
+                SymbolDisplayGlobalNamespaceStyle.Omitted,
+                SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+                SymbolDisplayGenericsOptions.IncludeTypeParameters,
+                miscellaneousOptions: SymbolDisplayMiscellaneousOptions.ExpandNullable
+            ));
+
+            if (!EvaluationEngine.IsOk(callerNs, returnTypeCalleeNs, configFile.Value))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(TransgressionRule, invocationExpr.GetLocation(), returnTypeCalleeNs, callerNs, ""));
+                return;
+            }
+
+            var methodTypeCalleeNs = context.SemanticModel.GetSymbolInfo(invocationExpr).Symbol.ContainingType.ToDisplayString(new SymbolDisplayFormat(
+                SymbolDisplayGlobalNamespaceStyle.Omitted,
+                SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+                SymbolDisplayGenericsOptions.IncludeTypeParameters,
+                miscellaneousOptions: SymbolDisplayMiscellaneousOptions.ExpandNullable
+            ));
+
+            if (!EvaluationEngine.IsOk(callerNs, methodTypeCalleeNs, configFile.Value))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(TransgressionRule, invocationExpr.GetLocation(), methodTypeCalleeNs, callerNs, ""));
+            }
         }
     }
 }

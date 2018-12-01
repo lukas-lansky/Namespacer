@@ -23,64 +23,87 @@ namespace Namespacer.Test
         }
 
         [TestMethod]
-        public void WriteLineIsForbidden()
+        public void SimpleForbiddenSituation()
         {
             var testCodeFile = @"
 using System;
 
-namespace ConsoleApplication1
+namespace SourceNamespace
 {
     class TypeName
     {
-        public static void Main()
+        public static void A()
         {
-            Console.WriteLine();
+            TargetNamespace.AnotherTypeName.B();
+        }
+    }
+}
+
+namespace TargetNamespace
+{
+    class AnotherTypeName
+    {
+        public static void B()
+        {
+            SourceNamesapce.TypeName.A();
         }
     }
 }
 ";
 
-            var emptyConfigFile = ConfigFile.LoadFromString(@"
-* => System.Console:
+            var configFile = ConfigFile.LoadFromString(@"
+SourceNamespace => TargetNamespace:
     * -!> *
 ").Value;
 
-            VerifyCSharpDiagnostic(testCodeFile, new NamespacerAnalyzer(emptyConfigFile));
+            VerifyCSharpDiagnostic(
+                testCodeFile,
+                new NamespacerAnalyzer(configFile),
+                new DiagnosticResult {
+                    Id = "NSER001",
+                    Severity = DiagnosticSeverity.Warning,
+                    Message = "You should not mention symbol 'TargetNamespace.AnotherTypeName' in 'SourceNamespace' because of rule '' from the .namespacer configuration file",
+                    Locations = new[] { new DiagnosticResultLocation("Test0.cs", 10, 13) }
+                });
         }
 
-        //Diagnostic and CodeFix both triggered and checked for
         [TestMethod]
-        public void TestMethod2()
+        public void SimpleAllowedSituation()
         {
-            var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
+            var testCodeFile = @"
+using System;
 
-    namespace ConsoleApplication1
+namespace SourceNamespace
+{
+    class TypeName
     {
-        class TypeName
-        {   
-        }
-    }";
-            var expected = new DiagnosticResult
-            {
-                Id = "Namespacer",
-                Message = String.Format("Type name '{0}' contains lowercase letters", "TypeName"),
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 11, 15)
-                        }
-            };
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
+        public static void A()
         {
-            return new NamespacerAnalyzer();
+            TargetNamespace.AnotherTypeName.B();
+        }
+    }
+}
+
+namespace TargetNamespace
+{
+    class AnotherTypeName
+    {
+        public static void B()
+        {
+            SourceNamesapce.TypeName.A();
+        }
+    }
+}
+";
+
+            var configFile = ConfigFile.LoadFromString(@"
+SourceNamespace => TargetNamespace:
+    * -> *
+").Value;
+
+            VerifyCSharpDiagnostic(
+                testCodeFile,
+                new NamespacerAnalyzer(configFile));
         }
     }
 }
